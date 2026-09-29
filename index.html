@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Counselor Contact Card Generator | LogiCole Consulting</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --accent: #6F42C1;
+    --accent-light: #8b5fd6;
+    --accent-dark: #5a35a0;
+    --bg: #f8f7fc;
+    --card-bg: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --success: #10b981;
+    --error: #ef4444;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  h1, h2, h3, h4 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 0;
+  }
+
+  .brand {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .brand h1 {
+    font-size: 2.2rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .brand p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 28px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    margin-bottom: 20px;
+  }
+
+  .card h2 {
+    font-size: 1.6rem;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .card h3 {
+    font-size: 1.3rem;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  /* Role selector */
+  .role-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .role-btn {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .role-btn:hover {
+    border-color: var(--accent);
+    background: #f5f0ff;
+  }
+
+  .role-icon {
+    font-size: 2rem;
+    width: 48px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .role-info h3 {
+    margin-bottom: 4px;
+    font-size: 1.2rem;
+  }
+
+  .role-info p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  /* Form styles */
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 0.95rem;
+  }
+
+  label .hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(111, 66, 193, 0.1);
+  }
+
+  .phone-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .phone-row .phone-main { flex: 1; }
+  .phone-row .phone-ext { width: 100px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover { background: var(--accent-dark); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+  }
+
+  .btn-secondary:hover { background: #f5f0ff; }
+
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-row .btn { flex: 1; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 16px;
+    cursor: pointer;
+  }
+
+  .back-link:hover { text-decoration: underline; }
+
+  /* Output area */
+  .output-area {
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .output-area .contact-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  .output-area .contact-title {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  #qrcode {
+    display: inline-block;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+
+  #qrcode canvas { display: block !important; }
+  #qrcode img { display: none !important; }
+
+  .scan-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  /* Admin success */
+  .share-link-box {
+    background: #f5f0ff;
+    border: 1.5px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0;
+  }
+
+  .share-link-box input {
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    flex: 1;
+    padding: 0;
+  }
+
+  .share-link-box input:focus {
+    box-shadow: none;
+  }
+
+  .copy-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+
+  .copy-btn:hover { background: var(--accent-dark); }
+
+  .email-template {
+    background: #f9fafb;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.6;
+    text-align: left;
+    margin: 16px 0;
+    white-space: pre-line;
+  }
+
+  .webhook-status {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+    display: none;
+  }
+
+  .webhook-status.success {
+    display: block;
+    background: #ecfdf5;
+    color: #065f46;
+  }
+
+  .webhook-status.error {
+    display: block;
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
+  .hidden { display: none !important; }
+
+  .powered-by {
+    text-align: center;
+    padding: 24px 0 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .powered-by a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .powered-by a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="brand">
+    <h1>LOGICOLE CONSULTING</h1>
+    <p>Patient Counselor Contact Card Generator</p>
+  </div>
+
+  <!-- STEP 1: Role Selector -->
+  <div id="stepRole" class="card">
+    <h2>WELCOME! WHO ARE YOU?</h2>
+    <p style="margin-bottom:16px; color: var(--text-muted);">Select your role to get started.</p>
+    <div class="role-selector">
+      <button class="role-btn" onclick="showAdminForm()">
+        <div class="role-icon">👔</div>
+        <div class="role-info">
+          <h3>SURGEON / ADMINISTRATOR</h3>
+          <p>Get a shareable link so your patient counselors can create their own contact cards.</p>
+        </div>
+      </button>
+      <button class="role-btn" onclick="showCounselorForm()">
+        <div class="role-icon">💬</div>
+        <div class="role-info">
+          <h3>PATIENT COUNSELOR</h3>
+          <p>Create your professional contact card with QR code right now.</p>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2A: Admin / Surgeon Form -->
+  <div id="stepAdmin" class="card hidden">
+    <a class="back-link" onclick="goBack()">← Back</a>
+    <h2>YOUR PRACTICE INFO</h2>
+    <p style="margin-bottom:20px; color: var(--text-muted);">Tell us a bit about you and your practice. We'll give you a link to share with your team.</p>
+
+    <div class="form-group">
+      <label>Your Name</label>
+      <input type="text" id="adminName" placeholder="Dr. Jane Smith">
+    </div>
+
+    <div class="form-group">
+      <label>Your Role</label>
+      <select id="adminRole">
+        <option value="Surgeon">Surgeon</option>
+        <option value="Administrator">Administrator</option>
+        <option value="Practice Manager">Practice Manager</option>
+        <option value="Office Manager">Office Manager</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="adminEmail" placeholder="jane@practiceabc.com">
+    </div>
+
+    <div class="form-group">
+      <label>Phone</label>
+      <input type="tel" id="adminPhone" placeholder="(210) 555-1234">
+    </div>
+
+    <div class="form-group">
+      <label>Practice Name</label>
+      <input type="text" id="adminPracticeName" placeholder="ABC Surgical Associates">
+    </div>
+
+    <div class="form-group">
+      <label>Practice Phone</label>
+      <input type="tel" id="adminPracticePhone" placeholder="(210) 555-0000">
+    </div>
+
+    <div id="adminWebhookStatus" class="webhook-status"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="submitAdmin()">Get My Team's Link →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2A-Result: Admin Success -->
+  <div id="stepAdminSuccess" class="card hidden">
+    <h2>YOU'RE ALL SET! 🎉</h2>
+    <p style="margin-bottom:16px;">Share this link with your patient counselors so they can create their own professional contact cards:</p>
+
+    <div class="share-link-box">
+      <input type="text" id="teamLink" readonly>
+      <button class="copy-btn" onclick="copyLink()">Copy</button>
+    </div>
+
+    <p style="margin-bottom:12px; font-weight:500;">Or send this ready-made email to your team:</p>
+
+    <div class="email-template" id="emailTemplate"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-secondary" onclick="copyEmail()">Copy Email Text</button>
+    </div>
+  </div>
+
+  <!-- STEP 2B: Counselor Form -->
+  <div id="stepCounselor" class="card hidden">
+    <a class="back-link" onclick="goBack()" id="counselorBackLink">← Back</a>
+    <h2>CREATE YOUR CONTACT CARD</h2>
+    <p style="margin-bottom:20px; color: var(--text-muted);">Fill in your details below to generate a professional contact card with QR code.</p>
+
+    <div class="form-group">
+      <label>Practice Name</label>
+      <input type="text" id="practiceName" placeholder="ABC Surgical Associates">
+    </div>
+
+    <div class="form-group">
+      <label>Your Full Name</label>
+      <input type="text" id="name" placeholder="Maria Garcia">
+    </div>
+
+    <div class="form-group">
+      <label>Job Title</label>
+      <input type="text" id="jobTitle" placeholder="Patient Counselor" value="Patient Counselor">
+    </div>
+
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="maria@practiceabc.com">
+    </div>
+
+    <div class="form-group">
+      <label>Practice Phone Number <span class="hint">(include your extension if you have one)</span></label>
+      <div class="phone-row">
+        <input type="tel" id="practicePhone" placeholder="(210) 555-0000" class="phone-main">
+        <input type="text" id="practiceExt" placeholder="Ext" class="phone-ext">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>SMS Number <span class="hint">(optional — if you text the patient)</span></label>
+      <input type="tel" id="smsPhone" placeholder="(210) 555-9999">
+    </div>
+
+    <div id="counselorWebhookStatus" class="webhook-status"></div>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="generateCard()">Generate My Contact Card →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Output -->
+  <div id="stepOutput" class="card hidden">
+    <a class="back-link" onclick="editCard()">← Edit Info</a>
+    <div class="output-area">
+      <div class="contact-name" id="outputName"></div>
+      <div class="contact-title" id="outputTitle"></div>
+      <div id="qrcode"></div>
+      <p class="scan-hint">Scan to save contact info</p>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="downloadVCard()">📇 Download vCard</button>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="downloadQR()">⬇ Download QR</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨 Print</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="powered-by">
+    Powered by <a href="https://logicoleconsulting.com" target="_blank">LogiCole Consulting</a>
+  </div>
+</div>
+
+<script>
+  // ── Config ──
+  var CONFIG = {
+    webhookAdmin:     'YOUR_GHL_WEBHOOK_URL_FOR_ADMINS',
+    webhookCounselor: 'YOUR_GHL_WEBHOOK_URL_FOR_COUNSELORS',
+    baseUrl: window.location.origin + window.location.pathname,
+  };
+
+  // ── State ──
+  var currentRef = '';
+  var currentPractice = '';
+  var cardData = {};
+
+  // ── Init: check for referral link ──
+  (function init() {
+    var params = new URLSearchParams(window.location.search);
+    var ref = params.get('ref');
+    var practice = params.get('practice');
+    if (ref) {
+      currentRef = ref;
+      currentPractice = practice || '';
+      showCounselorForm(true);
+    }
+  })();
+
+  // ── Navigation ──
+  function hideAll() {
+    var ids = ['stepRole','stepAdmin','stepAdminSuccess','stepCounselor','stepOutput'];
+    ids.forEach(function(id) {
+      document.getElementById(id).classList.add('hidden');
+    });
+  }
+
+  function goBack() {
+    hideAll();
+    document.getElementById('stepRole').classList.remove('hidden');
+  }
+
+  function showAdminForm() {
+    hideAll();
+    document.getElementById('stepAdmin').classList.remove('hidden');
+  }
+
+  function showCounselorForm(fromRef) {
+    hideAll();
+    document.getElementById('stepCounselor').classList.remove('hidden');
+    if (fromRef && currentPractice) {
+      document.getElementById('practiceName').value = currentPractice;
+    }
+    if (fromRef) {
+      document.getElementById('counselorBackLink').classList.add('hidden');
+    }
+  }
+
+  function editCard() {
+    hideAll();
+    document.getElementById('stepCounselor').classList.remove('hidden');
+  }
+
+  // ── Phone formatting ──
+  function toE164(raw) {
+    var d = raw.replace(/\D/g, '');
+    if (d.length === 10) return '+1' + d;
+    if (d.length === 11 && d[0] === '1') return '+' + d;
+    return '+' + d;
+  }
+
+  // ── Ref code generator ──
+  function generateRefCode(name, email) {
+    var raw = (name + email + Date.now()).split('').reduce(function(a, c) {
+      a = ((a << 5) - a) + c.charCodeAt(0);
+      return a & a;
+    }, 0);
+    return Math.abs(raw).toString(36).slice(0, 8);
+  }
+
+  // ── Webhook ──
+  async function sendToWebhook(url, data, statusEl) {
+    if (!url || url.startsWith('YOUR_')) {
+      console.log('[DEV] Webhook payload:', JSON.stringify(data, null, 2));
+      if (statusEl) {
+        statusEl.className = 'webhook-status success';
+        statusEl.textContent = '[Dev mode] Data logged to console — connect GHL webhook to go live.';
+        statusEl.style.display = 'block';
+      }
+      return true;
+    }
+    try {
+      if (statusEl) {
+        statusEl.className = 'webhook-status';
+        statusEl.textContent = 'Sending...';
+        statusEl.style.display = 'block';
+      }
+      var resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (statusEl) {
+        if (resp.ok) {
+          statusEl.className = 'webhook-status success';
+          statusEl.textContent = 'Info saved successfully!';
+        } else {
+          statusEl.className = 'webhook-status error';
+          statusEl.textContent = 'Something went wrong. Please try again.';
+        }
+      }
+      return resp.ok;
+    } catch (e) {
+      console.error('Webhook error:', e);
+      if (statusEl) {
+        statusEl.className = 'webhook-status error';
+        statusEl.textContent = 'Connection error. Please try again.';
+      }
+      return false;
+    }
+  }
+
+  // ── Admin submit ──
+  async function submitAdmin() {
+    var name = document.getElementById('adminName').value.trim();
+    var email = document.getElementById('adminEmail').value.trim();
+    var practiceName = document.getElementById('adminPracticeName').value.trim();
+
+    if (!name || !email || !practiceName) {
+      alert('Please fill in your name, email, and practice name.');
+      return;
+    }
+
+    var refCode = generateRefCode(name, email);
+    var teamLink = CONFIG.baseUrl + '?ref=' + refCode + '&practice=' + encodeURIComponent(practiceName);
+
+    var payload = {
+      type: 'practice_leader',
+      name: name,
+      role: document.getElementById('adminRole').value,
+      email: email,
+      phone: document.getElementById('adminPhone').value.trim(),
+      practice_name: practiceName,
+      practice_phone: document.getElementById('adminPracticePhone').value.trim(),
+      ref_code: refCode,
+      team_link: teamLink,
+      source: 'contact_card_tool',
+      submitted_at: new Date().toISOString(),
+    };
+
+    var statusEl = document.getElementById('adminWebhookStatus');
+    await sendToWebhook(CONFIG.webhookAdmin, payload, statusEl);
+
+    // Show success
+    document.getElementById('teamLink').value = teamLink;
+
+    var emailText = 'Hi team,\n\nI found a great tool that lets you create a professional digital contact card with a QR code — perfect for giving patients an easy way to save your info.\n\nClick the link below to create yours:\n' + teamLink + '\n\nIt only takes a minute!\n\nBest,\n' + name;
+    document.getElementById('emailTemplate').textContent = emailText;
+
+    hideAll();
+    document.getElementById('stepAdminSuccess').classList.remove('hidden');
+  }
+
+  // ── Copy helpers ──
+  function copyLink() {
+    var input = document.getElementById('teamLink');
+    input.select();
+    document.execCommand('copy');
+    var btn = input.nextElementSibling;
+    btn.textContent = 'Copied!';
+    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+  }
+
+  function copyEmail() {
+    var text = document.getElementById('emailTemplate').textContent;
+    navigator.clipboard.writeText(text).then(function() {
+      var btn = event.target;
+      btn.textContent = 'Copied!';
+      setTimeout(function() { btn.textContent = 'Copy Email Text'; }, 2000);
+    });
+  }
+
+  // ── vCard builder ──
+  function buildVCard(data) {
+    var parts = data.name.trim().split(/\s+/);
+    var last = parts.length > 1 ? parts.pop() : '';
+    var first = parts.join(' ');
+    var lines = [
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      'N:' + last + ';' + first + ';;;',
+      'FN:' + data.name.trim(),
+      'TITLE:' + (data.jobTitle || 'Patient Counselor'),
+    ];
+    if (data.practiceName) lines.push('ORG:' + data.practiceName);
+    if (data.email) lines.push('EMAIL;TYPE=WORK:' + data.email);
+    if (data.practicePhone) {
+      var tel = 'TEL;TYPE=WORK,VOICE:' + toE164(data.practicePhone);
+      if (data.practiceExt) tel += ';ext=' + data.practiceExt.replace(/\D/g, '');
+      lines.push(tel);
+    }
+    if (data.smsPhone) {
+      lines.push('TEL;TYPE=CELL:' + toE164(data.smsPhone));
+    }
+    lines.push('END:VCARD');
+    return lines.join('\n');
+  }
+
+  // ── Generate card ──
+  async function generateCard() {
+    var data = {
+      practiceName: document.getElementById('practiceName').value.trim(),
+      name: document.getElementById('name').value.trim(),
+      jobTitle: document.getElementById('jobTitle').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      practicePhone: document.getElementById('practicePhone').value.trim(),
+      practiceExt: document.getElementById('practiceExt').value.trim(),
+      smsPhone: document.getElementById('smsPhone').value.trim(),
+    };
+
+    if (!data.name) {
+      alert('Please enter your name.');
+      return;
+    }
+
+    cardData = data;
+
+    // Send to webhook
+    var payload = {
+      type: 'counselor',
+      name: data.name,
+      job_title: data.jobTitle,
+      email: data.email,
+      phone: data.practicePhone ? toE164(data.practicePhone) : '',
+      phone_ext: data.practiceExt.replace(/\D/g, ''),
+      sms_number: data.smsPhone ? toE164(data.smsPhone) : '',
+      practice_name: data.practiceName,
+      referred_by: currentRef || '',
+      source: 'contact_card_tool',
+      submitted_at: new Date().toISOString(),
+    };
+
+    var statusEl = document.getElementById('counselorWebhookStatus');
+    await sendToWebhook(CONFIG.webhookCounselor, payload, statusEl);
+
+    // Build vCard string
+    var vcard = buildVCard(data);
+
+    // Show output
+    document.getElementById('outputName').textContent = data.name;
+    document.getElementById('outputTitle').textContent = (data.jobTitle || 'Patient Counselor') + (data.practiceName ? ' at ' + data.practiceName : '');
+
+    // Generate QR
+    var qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+    new QRCode(qrContainer, {
+      text: vcard,
+      width: 220,
+      height: 220,
+      colorDark: '#1a1a2e',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M,
+    });
+
+    hideAll();
+    document.getElementById('stepOutput').classList.remove('hidden');
+  }
+
+  // ── Download vCard ──
+  function downloadVCard() {
+    var vcard = buildVCard(cardData);
+    var blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    var filename = cardData.name.replace(/\s+/g, '-').toLowerCase() || 'contact';
+    link.download = filename + '.vcf';
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── Download QR ──
+  function downloadQR() {
+    var canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) return;
+    var link = document.createElement('a');
+    var filename = (cardData.name || 'contact').replace(/\s+/g, '-').toLowerCase();
+    link.download = filename + '-qr.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+</script>
+
+</body>
+</html>
