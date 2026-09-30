@@ -785,15 +785,109 @@
     URL.revokeObjectURL(url);
   }
 
-  // ── Download QR ──
+  // ── Download QR Card ──
   function downloadQR() {
-    var canvas = document.querySelector('#qrcode canvas');
-    if (!canvas) return;
+    var qrCanvas = document.querySelector('#qrcode canvas');
+    if (!qrCanvas) return;
+
+    // Quarter-sheet portrait: 4.25" x 5.5" at 2x resolution
+    var W = 850, H = 1100;
+    var c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    var ctx = c.getContext('2d');
+
+    // White background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Name (Bebas Neue style - bold, uppercase, purple)
+    var name = (cardData.name || '').toUpperCase();
+    ctx.fillStyle = '#6F42C1';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 72px "Bebas Neue", sans-serif';
+    ctx.fillText(name, W / 2, 120);
+
+    // Title + Practice
+    var title = (cardData.jobTitle || 'Patient Counselor');
+    if (cardData.practiceName) title += ' at ' + cardData.practiceName;
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '500 28px "DM Sans", sans-serif';
+
+    // Word-wrap title if needed
+    var maxWidth = W - 80;
+    var words = title.split(' ');
+    var lines = [];
+    var currentLine = words[0];
+    for (var i = 1; i < words.length; i++) {
+      var testLine = currentLine + ' ' + words[i];
+      if (ctx.measureText(testLine).width > maxWidth) {
+        lines.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    lines.push(currentLine);
+
+    var titleY = 170;
+    for (var j = 0; j < lines.length; j++) {
+      ctx.fillText(lines[j], W / 2, titleY + j * 38);
+    }
+
+    // QR code - centered, large
+    var qrSize = 480;
+    var qrX = (W - qrSize) / 2;
+    var qrY = titleY + lines.length * 38 + 40;
+
+    // Draw QR container with rounded rect + subtle shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.08)';
+    ctx.shadowBlur = 16;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = '#ffffff';
+    var pad = 24;
+    roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 20);
+    ctx.fill();
+    ctx.restore();
+
+    // Border
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 20);
+    ctx.stroke();
+
+    // Draw QR
+    ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+    // "Scan to save contact info" at bottom
+    var bottomY = qrY + qrSize + pad + 60;
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '24px "DM Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Scan to save contact info', W / 2, bottomY);
+
+    // Download
     var link = document.createElement('a');
     var filename = (cardData.name || 'contact').replace(/\s+/g, '-').toLowerCase();
-    link.download = filename + '-qr.png';
-    link.href = canvas.toDataURL('image/png');
+    link.download = filename + '-qr-card.png';
+    link.href = c.toDataURL('image/png');
     link.click();
+  }
+
+  // Rounded rect helper
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
   }
 </script>
 
